@@ -421,7 +421,7 @@ img {
 
 /* Pain Points Section */
 .pain-points-section {
-  background: var(--bg-color);
+  background: var(--bg-secondary);
 }
 
 .pain-grid {
@@ -484,7 +484,7 @@ img {
 
 /* Features Section */
 .features-section {
-  background: var(--bg-secondary);
+  background: var(--bg-color);
 }
 
 .features-grid {
@@ -1188,4 +1188,88 @@ footer {
   margin-top: 10px;
   margin-bottom: 0;
   line-height: 1.3;
+}
+
+/* AI Models Section */
+.ai-models-section {
+  background: var(--bg-secondary);
+  padding: 80px 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ai-models-section .section-title {
+  margin-bottom: 50px;
+}
+
+.highlight-subtitle {
+  font-size: 0.7em;
+  color: var(--text-muted);
+  font-weight: 400;
+  display: block;
+  margin-top: 10px;
+}
+
+.ai-models-grid {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.ai-model-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.3s ease;
+}
+
+.ai-model-card:hover {
+  transform: translateY(-5px);
+}
+
+.ai-logo-wrapper {
+  width: 80px;
+  height: 80px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-logo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ai-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-color);
+  letter-spacing: 0.5px;
+}
+
+/* Mobile Responsiveness for AI Section */
+@media (max-width: 768px) {
+  .ai-models-grid {
+    gap: 30px;
+  }
+
+  .ai-logo-wrapper {
+    width: 60px;
+    height: 60px;
+    padding: 12px;
+  }
+
+  .ai-name {
+    font-size: 14px;
+  }
 }
