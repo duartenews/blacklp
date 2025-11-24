@@ -907,16 +907,21 @@ footer {
     padding: 60px 0;
   }
 
-  /* Consolidated Mobile Hero Styles matching LP1 */
+  /* Consolidated Mobile Hero Styles - iOS Safari optimized */
   .hero-section {
     min-height: auto;
-    height: calc(100dvh - 40px);
-    /* Match LP1 */
+    height: auto;
+    /* Use auto instead of fixed vh to adapt to Safari bars */
+    min-height: calc(100dvh - 40px);
+    /* Minimum height accounting for top bar */
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding-top: 0;
-    padding-bottom: 10px;
+    justify-content: flex-start;
+    /* Changed from center to flex-start */
+    padding-top: 20px;
+    /* Add some top padding */
+    padding-bottom: 80px;
+    /* Increased bottom padding for Safari bottom bar */
     margin-top: 40px;
     /* Account for sticky top bar */
   }
@@ -950,11 +955,11 @@ footer {
   }
 
   .hero-title {
-    font-size: 1.6rem;
-    /* Match LP1 */
+    font-size: 1.5rem;
+    /* Slightly reduced for better fit */
     margin-top: 0;
-    margin-bottom: 19px;
-    /* Match LP1 */
+    margin-bottom: 15px;
+    /* Reduced from 19px */
     line-height: 1.2;
   }
 
@@ -966,15 +971,22 @@ footer {
   }
 
   .video-container {
-    margin-top: 40px !important;
-    /* Match LP1 */
-    margin-bottom: 40px !important;
-    /* Match LP1 */
+    margin-top: 30px !important;
+    /* Reduced from 40px */
+    margin-bottom: 30px !important;
+    /* Reduced from 40px */
   }
 
   .hero-checks-slider {
-    margin-bottom: 40px;
-    /* Match LP1 */
+    margin-bottom: 20px;
+    /* Reduced from 40px for tighter spacing on mobile */
+  }
+
+  .hero-cta-container {
+    margin-top: 20px;
+    /* Reduced spacing for mobile */
+    padding-bottom: 20px;
+    /* Extra padding to clear Safari bar */
   }
 
   .pain-grid,
