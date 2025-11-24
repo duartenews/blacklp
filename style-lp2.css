@@ -918,9 +918,9 @@ footer {
     flex-direction: column;
     justify-content: flex-start;
     /* Changed from center to flex-start */
-    padding-top: 20px;
+    padding-top: 60px;
     /* Add some top padding */
-    padding-bottom: 80px;
+    padding-bottom: 30px;
     /* Increased bottom padding for Safari bottom bar */
     margin-top: 40px;
     /* Account for sticky top bar */
