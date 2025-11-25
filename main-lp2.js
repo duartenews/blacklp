@@ -125,6 +125,32 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', handleScroll);
 });
 
+// Video Facade Handler
+document.addEventListener('DOMContentLoaded', () => {
+  const videoFacades = document.querySelectorAll('.video-facade');
+
+  videoFacades.forEach(facade => {
+    facade.addEventListener('click', function () {
+      const videoId = this.getAttribute('data-video-id');
+      const videoHash = this.getAttribute('data-video-hash');
+
+      // Create iframe
+      const iframe = document.createElement('iframe');
+      iframe.width = '100%';
+      iframe.height = '100%';
+      iframe.src = `https://player.vimeo.com/video/${videoId}?h=${videoHash}&autoplay=1&autopause=0&loop=0&muted=0&title=0&portrait=0&byline=0`;
+      iframe.frameBorder = '0';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+
+      // Replace facade with iframe
+      this.parentElement.innerHTML = '';
+      this.parentElement.appendChild(iframe);
+    });
+  });
+});
+
+
 // Testimonials Data
 const testimonials = [
   {
