@@ -130,27 +130,27 @@ const testimonials = [
   {
     name: "Dra. Danielle Freitas",
     text: "Tirou um peso das minhas costas.",
-    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file2.jpg"
+    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file6.jpg"
   },
   {
     name: "Dra. Fernanda Rabelo",
     text: "Investimos por aqui mais de 20 mil em tráfego e a secretaria plus arrebenta com os leads",
-    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file3.jpg"
+    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file2.jpg"
   },
   {
     name: "Dra. Alana Ferri",
     text: "A gente perdia muito paciente pela demora, mas não queria um bot automatico, eu odeio esse tipo de atendimento. A IA deles salvou minha clínica com a humanização.",
-    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file4.jpg"
+    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file3.jpg"
   },
   {
     name: "Dra. Adriana Martinuzzo",
     text: "Ela responde igualzinho um humano e gera muita empatia com os pacientes",
-    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file5.jpg"
+    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file4.jpg"
   },
   {
     name: "Dra. Tânia Kelly",
     text: "É como se fosse um time comercial que responde rápido e sabe manejar os leads como nem eu mesma fazia. Eu tenho umas 3 SDR e to pagando por meia",
-    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file6.jpg"
+    image: "https://secretariaplus.com.br/wp-content/uploads/2025/07/file5.jpg"
   }
 ];
 
