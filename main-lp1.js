@@ -1,4 +1,4 @@
-import './style.css'
+import './style-lp1.css'
 
 // Countdown Timer Logic
 function startCountdown() {
