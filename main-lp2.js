@@ -396,28 +396,24 @@ function initBlackFridayLogic() {
   const CONFIG = {
     // Lotes
     lote1Max: 100,
-    lote2Max: 200,
-    startSold: 87, // começa com 87 vendas => faltam 13 para fechar o Lote 1
+    lote2Max: 250,
+    startSold: 79, // começa com 79 vendas => faltam 21 para fechar o Lote 1
 
-    // === FASE 1: 13 vendas (do 87 ao 100) em 8 minutos, de forma randômica ===
+    // === FASE 1: 21 vendas em 12 minutos (Lote 1) ===
     phase1: {
-      // Duração total da fase 1 em segundos (8 min = 8 * 60)
-      // ~37 segundos por notificação
-      durationSeconds: 8 * 60,
+      durationSeconds: 12 * 60, // 12 min
+      salesCount: 21
     },
 
-    // === FASE 2: 100 vendas (do 100 ao 200) em 42 minutos, de forma randômica ===
+    // === FASE 2: 100 vendas em 30 minutos (transição dentro do Lote 2) ===
     phase2: {
-      // Duração total da fase 2 em segundos (42 min = 42 * 60)
-      // ~25 segundos por notificação
-      durationSeconds: 42 * 60,
+      durationSeconds: 30 * 60, // 30 min
+      salesCount: 100
     },
 
-    // === FASE 3 (Lote 3 - do 200 pra frente) ===
+    // === FASE 3: ritmo médio de 1 venda a cada ~90s ===
     phase3: {
-      // Lote 3 (do 200 pra frente) – média de 1min30s por notificação
-      // 1 venda a cada ~90 segundos = chance de 1/90 por segundo ≈ 0.0111
-      baseChancePerSecond: 0.0111
+      baseChancePerSecond: 1 / 90 // ~0.0111
     },
 
     lote1Link: 'https://pay.hub.la/checkout/PLACEHOLDER_197',
@@ -462,25 +458,25 @@ function initBlackFridayLogic() {
 
   function generatePhase1Schedule() {
     const duration = CONFIG.phase1.durationSeconds;
-    const salesRemainingForLote1 = Math.max(0, CONFIG.lote1Max - state.currentSold);
+    const remainingToLote1 = Math.max(0, CONFIG.lote1Max - state.currentSold);
+    const salesToSchedule = Math.min(remainingToLote1, CONFIG.phase1.salesCount);
     const times = [];
 
-    if (salesRemainingForLote1 === 0 || duration <= 0) {
+    if (salesToSchedule === 0 || duration <= 0) {
       return times;
     }
 
-    // Garantir no máximo 1 venda por segundo:
-    // sorteia "salesRemainingForLote1" segundos distintos entre 1 e duration.
-    if (salesRemainingForLote1 <= duration) {
+    // No máximo 1 venda por segundo
+    if (salesToSchedule <= duration) {
       const secondsSet = new Set();
-      while (secondsSet.size < salesRemainingForLote1) {
+      while (secondsSet.size < salesToSchedule) {
         const second = Math.floor(Math.random() * duration) + 1; // [1, duration]
         secondsSet.add(second);
       }
       return Array.from(secondsSet).sort((a, b) => a - b);
     } else {
-      // Fallback: permite segundos repetidos
-      for (let i = 0; i < salesRemainingForLote1; i++) {
+      // Fallback, não deve acontecer aqui
+      for (let i = 0; i < salesToSchedule; i++) {
         times.push(Math.random() * duration);
       }
       return times.sort((a, b) => a - b);
@@ -489,24 +485,24 @@ function initBlackFridayLogic() {
 
   function generatePhase2Schedule() {
     const duration = CONFIG.phase2.durationSeconds;
-    const salesForLote2 = CONFIG.lote2Max - CONFIG.lote1Max; // 100 vendas (de 100 a 200)
+    const remainingToLote2 = Math.max(0, CONFIG.lote2Max - state.currentSold);
+    const salesToSchedule = Math.min(remainingToLote2, CONFIG.phase2.salesCount);
     const times = [];
 
-    if (salesForLote2 === 0 || duration <= 0) {
+    if (salesToSchedule === 0 || duration <= 0) {
       return times;
     }
 
-    // Garantir no máximo 1 venda por segundo:
-    if (salesForLote2 <= duration) {
+    if (salesToSchedule <= duration) {
       const secondsSet = new Set();
-      while (secondsSet.size < salesForLote2) {
+      while (secondsSet.size < salesToSchedule) {
         const second = Math.floor(Math.random() * duration) + 1; // [1, duration]
         secondsSet.add(second);
       }
       return Array.from(secondsSet).sort((a, b) => a - b);
     } else {
-      // Fallback: permite segundos repetidos
-      for (let i = 0; i < salesForLote2; i++) {
+      // Fallback
+      for (let i = 0; i < salesToSchedule; i++) {
         times.push(Math.random() * duration);
       }
       return times.sort((a, b) => a - b);
@@ -784,17 +780,15 @@ function initBlackFridayLogic() {
       if (entry.isIntersecting && !notificationsStarted) {
         notificationsStarted = true;
 
-        // Start showing notifications (but not counting sales yet)
+        // 1 notificação fake a cada ~75s
         const notificationInterval = setInterval(() => {
+          // Quando as vendas reais começarem, para o aquecimento
           if (state.isActive) {
-            clearInterval(notificationInterval); // Stop when real sales start
+            clearInterval(notificationInterval);
           } else {
-            // Random chance to show notification (visual only)
-            if (Math.random() < 0.3) {
-              showNotification();
-            }
+            showNotification(); // fake (não mexe em contador de vendas)
           }
-        }, 2000); // Show notification every 2 seconds randomly
+        }, 75000); // 75.000 ms = 75 segundos
 
         earlyNotificationObserver.disconnect();
       }
@@ -821,12 +815,14 @@ function initBlackFridayLogic() {
 
     const now = Date.now();
     const elapsedSeconds = (now - state.startTime) / 1000;
-    const phase1Duration = CONFIG.phase1.durationSeconds;
 
-    // === FASE 1: vendas 100% agendadas (13 vendas de 87 a 100) ===
+    const phase1Duration = CONFIG.phase1.durationSeconds;
+    const phase2Duration = CONFIG.phase2.durationSeconds;
+
+    // === FASE 1: 21 vendas em até 12 minutos ===
     if (phase1Active) {
       if (elapsedSeconds <= phase1Duration && phase1SalesDone < phase1Schedule.length) {
-        // Podem acontecer várias vendas de uma vez se o usuário "pular" tempo
+        // Paga todas as vendas cujos segundos já passaram
         while (
           phase1SalesDone < phase1Schedule.length &&
           elapsedSeconds >= phase1Schedule[phase1SalesDone]
@@ -835,38 +831,38 @@ function initBlackFridayLogic() {
           phase1SalesDone++;
         }
 
-        // Se terminou todas as vendas da fase 1, desativa e ativa fase 2
+        // Se terminou as vendas da fase 1, ativa fase 2
         if (phase1SalesDone >= phase1Schedule.length) {
           phase1Active = false;
-          // Ativa fase 2
-          phase2Active = true;
-          phase2StartTime = Date.now();
-          phase2Schedule = generatePhase2Schedule();
-          phase2SalesDone = 0;
+
+          if (state.currentSold < CONFIG.lote2Max) {
+            phase2Active = true;
+            phase2StartTime = now;
+            phase2Schedule = generatePhase2Schedule();
+            phase2SalesDone = 0;
+          }
         }
 
-        // Enquanto estamos na fase 1, não entra na fase 2/3
+        // Enquanto fase 1 está rolando, não entra nas demais
         return;
       } else {
-        // Passou o tempo da fase 1 – garante que não fique preso aqui
+        // Estourou o tempo da fase 1: encerra e passa pra fase 2 (se fizer sentido)
         phase1Active = false;
-        // Ativa fase 2 se ainda não foi ativada
+
         if (!phase2Active && state.currentSold < CONFIG.lote2Max) {
           phase2Active = true;
-          phase2StartTime = Date.now();
+          phase2StartTime = now;
           phase2Schedule = generatePhase2Schedule();
           phase2SalesDone = 0;
         }
       }
     }
 
-    // === FASE 2: vendas 100% agendadas (100 vendas de 100 a 200 em 30min) ===
-    if (phase2Active && state.currentSold >= CONFIG.lote1Max && state.currentSold < CONFIG.lote2Max) {
+    // === FASE 2: 100 vendas em até 30 minutos ===
+    if (phase2Active && phase2Schedule.length > 0 && phase2SalesDone < phase2Schedule.length) {
       const phase2ElapsedSeconds = (now - phase2StartTime) / 1000;
-      const phase2Duration = CONFIG.phase2.durationSeconds;
 
-      if (phase2ElapsedSeconds <= phase2Duration && phase2SalesDone < phase2Schedule.length) {
-        // Podem acontecer várias vendas de uma vez
+      if (phase2ElapsedSeconds <= phase2Duration) {
         while (
           phase2SalesDone < phase2Schedule.length &&
           phase2ElapsedSeconds >= phase2Schedule[phase2SalesDone]
@@ -875,29 +871,25 @@ function initBlackFridayLogic() {
           phase2SalesDone++;
         }
 
-        // Se terminou todas as vendas da fase 2, desativa
         if (phase2SalesDone >= phase2Schedule.length) {
           phase2Active = false;
         }
 
-        // Enquanto estamos na fase 2, não entra na fase 3
+        // Enquanto fase 2 está rolando, não entra na fase 3
         return;
       } else {
-        // Passou o tempo da fase 2 – garante que não fique preso aqui
+        // Estourou o tempo da fase 2
         phase2Active = false;
       }
     }
 
-    // === FASE 3: probabilidade por segundo (lote 3 - mais lento) ===
-    if (state.currentSold >= CONFIG.lote2Max) {
-      const baseChance = CONFIG.phase3.baseChancePerSecond;
-      // Randomização em torno da média
-      const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 a 1.3
-      const chance = baseChance * randomFactor;
+    // === FASE 3: probabilidade média 1 venda / 90s ===
+    const baseChance = CONFIG.phase3.baseChancePerSecond;
+    const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 a 1.3 pra dar variada
+    const chance = baseChance * randomFactor;
 
-      if (Math.random() < chance) {
-        incrementSale();
-      }
+    if (Math.random() < chance) {
+      incrementSale();
     }
   }
 
