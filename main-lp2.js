@@ -416,8 +416,9 @@ function initBlackFridayLogic() {
       baseChancePerSecond: 1 / 90 // ~0.0111
     },
 
-    lote1Link: 'https://pay.hub.la/checkout/PLACEHOLDER_197',
-    lote2Link: 'https://pay.hub.la/checkout/PLACEHOLDER_297',
+  lote1Link: 'https://pay.hub.la/4vKjlCIm6mnGZugbaX4m',
+  lote2Link: 'https://pay.hub.la/TBDnrhvmPo4DJmJTJziT',
+  lote3Link: 'https://pay.hub.la/V9jpzuZOA63avK45EkAg',
     names: [
       // 30% Women (12)
       "Ana Paula C.", "Mariana Costa F.", "Fernanda Lima S.", "Juliana Martins R.", "Patrícia Rocha M.", "Camila Oliveira D.",
@@ -456,9 +457,16 @@ function initBlackFridayLogic() {
   let phase2Active = false;   // se ainda estamos usando o agendamento da fase 2
   let phase2StartTime = null; // quando a fase 2 começou
 
+  // === Controle do final das vagas do Lote 1 ===
+  const FINAL_STRETCH_TRIGGER_REMAINING = 3;
+  const FINAL_STRETCH_MIN_DELAY_MS = 45 * 1000;
+  const FINAL_STRETCH_MAX_DELAY_MS = 75 * 1000;
+  let finalStretchActive = false;
+  let finalStretchNextSaleTime = null;
+
   // === Janela de tolerância do botão "Testar Agora" ===
   const pauseStateKey = 'bf_pause_state_v1';
-  const TOLERANCE_WINDOW_MS = 5 * 60 * 1000; // 5 minutos
+  const TOLERANCE_WINDOW_MS = 8 * 60 * 1000; // 8 minutos
   const SALES_LOOP_INTERVAL_MS = 1000;
   let testButtonClicked = false;
   let pauseBudgetMs = 0;
@@ -493,6 +501,59 @@ function initBlackFridayLogic() {
   document.addEventListener('visibilitychange', () => {
     currentVisibilityState = document.visibilityState || 'visible';
   });
+
+  function scheduleNextFinalStretchSale() {
+    const delayRange = FINAL_STRETCH_MAX_DELAY_MS - FINAL_STRETCH_MIN_DELAY_MS;
+    const delay = FINAL_STRETCH_MIN_DELAY_MS + Math.random() * (delayRange > 0 ? delayRange : 0);
+    finalStretchNextSaleTime = Date.now() + delay;
+  }
+
+  function handleFinalStretch(now) {
+    if (state.lote !== 1) {
+      finalStretchActive = false;
+      finalStretchNextSaleTime = null;
+      return false;
+    }
+
+    const remainingToLote1 = CONFIG.lote1Max - state.currentSold;
+    if (remainingToLote1 > FINAL_STRETCH_TRIGGER_REMAINING) {
+      return false;
+    }
+
+    if (!finalStretchActive) {
+      finalStretchActive = true;
+      phase1Active = false;
+      scheduleNextFinalStretchSale();
+    }
+
+    if (remainingToLote1 <= 0) {
+      finalStretchActive = false;
+      finalStretchNextSaleTime = null;
+      return false;
+    }
+
+    if (finalStretchNextSaleTime && now >= finalStretchNextSaleTime) {
+      incrementSale();
+
+      const remainingAfterSale = CONFIG.lote1Max - state.currentSold;
+
+      if (state.lote !== 1 || remainingAfterSale <= 0) {
+        finalStretchActive = false;
+        finalStretchNextSaleTime = null;
+
+        if (!phase2Active && state.currentSold < CONFIG.lote2Max) {
+          phase2Active = true;
+          phase2StartTime = Date.now();
+          phase2Schedule = generatePhase2Schedule();
+          phase2SalesDone = 0;
+        }
+      } else {
+        scheduleNextFinalStretchSale();
+      }
+    }
+
+    return finalStretchActive;
+  }
 
   function generatePhase1Schedule() {
     const duration = CONFIG.phase1.durationSeconds;
@@ -656,7 +717,13 @@ function initBlackFridayLogic() {
     // Button Link
     if (planBtn) {
       planBtn.onclick = () => {
-        window.location.href = state.lote === 1 ? CONFIG.lote1Link : CONFIG.lote2Link;
+        let targetLink = CONFIG.lote1Link;
+        if (state.lote === 2) {
+          targetLink = CONFIG.lote2Link;
+        } else if (state.lote >= 3) {
+          targetLink = CONFIG.lote3Link;
+        }
+        window.location.href = targetLink;
       };
       // Clean button text
       planBtn.innerHTML = `Assinar Agora <i class="fa-solid fa-right-long"></i> <span class="button-timer"></span>`;
@@ -860,6 +927,10 @@ function initBlackFridayLogic() {
 
     const now = Date.now();
     const elapsedSeconds = (now - state.startTime) / 1000;
+
+    if (handleFinalStretch(now)) {
+      return;
+    }
 
     const phase1Duration = CONFIG.phase1.durationSeconds;
     const phase2Duration = CONFIG.phase2.durationSeconds;
