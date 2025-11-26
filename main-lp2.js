@@ -536,7 +536,7 @@ function initBlackFridayLogic() {
         window.location.href = state.lote === 1 ? CONFIG.lote1Link : CONFIG.lote2Link;
       };
       // Clean button text
-      planBtn.innerHTML = `Assinar Agora <span class="arrow-rotate">⬅</span> <span class="button-timer"></span>`;
+      planBtn.innerHTML = `Assinar Agora <i class="fa-solid fa-right-long"></i> <span class="button-timer"></span>`;
     }
 
     // Top Bar Progress Update
