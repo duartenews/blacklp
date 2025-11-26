@@ -5,7 +5,7 @@ function startCountdown() {
   const timerElement = document.getElementById('countdown-timer');
   const buttonTimers = document.querySelectorAll('.button-timer');
   const topBar = document.querySelector('.top-bar');
-  const duration = 8 * 60 * 1000; // 8 minutes in milliseconds
+  const duration = 13 * 60 * 1000; // 13 minutes in milliseconds
   let endTime = localStorage.getItem('blackFridayEndTime');
 
   if (!endTime) {
@@ -204,7 +204,9 @@ function createTestimonialCard(data) {
 
 // Duplicate testimonials to create infinite loop effect
 const allTestimonials = [...testimonials, ...testimonials, ...testimonials];
-track.innerHTML = allTestimonials.map(createTestimonialCard).join('');
+if (track) {
+  track.innerHTML = allTestimonials.map(createTestimonialCard).join('');
+}
 
 // FAQ Logic
 const faqItems = document.querySelectorAll('.faq-item');
@@ -235,20 +237,19 @@ let currentIndex = 0;
 const totalCards = document.querySelectorAll('.testimonial-card').length;
 
 function getCardWidth() {
-  const card = document.querySelector('.testimonial-card');
-  if (!card) return 300;
-  const style = window.getComputedStyle(testimonialsTrack);
-  const gap = parseFloat(style.gap) || 30;
-  return card.offsetWidth + gap;
+  // Optimized to avoid reflow: Card width (320px) + Gap (30px) defined in CSS
+  return 350;
 }
 
 function slideToNext() {
+  if (!testimonialsTrack) return;
   const cardWidth = getCardWidth();
   currentIndex = (currentIndex + 1) % totalCards;
   testimonialsTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
 }
 
 function slideToPrev() {
+  if (!testimonialsTrack) return;
   const cardWidth = getCardWidth();
   currentIndex = (currentIndex - 1 + totalCards) % totalCards;
   testimonialsTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
@@ -268,6 +269,7 @@ setInterval(slideToNext, 3000);
 
 // Handle resize to reset position alignment
 window.addEventListener('resize', () => {
+  if (!testimonialsTrack) return;
   const cardWidth = getCardWidth();
   testimonialsTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
 });
@@ -392,12 +394,26 @@ function initBlackFridayLogic() {
   const CONFIG = {
     lote1Max: 200,
     lote2Max: 350,
-    startSold: 116,
-    phases: [
-      { duration: 480, target: 198 },   // 0-8min: Reach ~198 (Lote 1 almost full)
-      { duration: 480, target: 348 },  // 8min-16min: Reach ~348 (Lote 2 almost full)
-      { duration: Infinity, target: 1000 } // Lote 3: Slow burn
-    ],
+    startSold: 158,
+
+    // === FASE 1: 42 vendas (do 158 ao 200) em 13 minutos, de forma randômica ===
+    phase1: {
+      // Duração total da fase 1 em segundos (13 min = 13 * 60)
+      durationSeconds: 13 * 60,
+    },
+
+    // === Depois do lote 1 (Lote 2 e 3) ===
+    // Controle do "ritmo" via chance média por segundo.
+    // Quanto maior o número, mais vendas por segundo em média.
+    phase2: {
+      // Lote 2 (do 200 ao 350) – valor original aproximado: ~0.156
+      baseChancePerSecond: 0.156
+    },
+    phase3: {
+      // Lote 3 (do 350 pra frente) – mais lento
+      baseChancePerSecond: 0.05
+    },
+
     lote1Link: 'https://pay.hub.la/checkout/PLACEHOLDER_197',
     lote2Link: 'https://pay.hub.la/checkout/PLACEHOLDER_297',
     names: [
@@ -426,6 +442,40 @@ function initBlackFridayLogic() {
     lote: 1,
     maxSold: CONFIG.lote1Max
   };
+
+  // === Controle interno da FASE 1 (agendamento das 42 vendas) ===
+  let phase1Schedule = [];    // lista de "segundos" em que cada venda deve acontecer
+  let phase1SalesDone = 0;    // quantas vendas da fase 1 já foram feitas
+  let phase1Active = false;   // se ainda estamos usando o agendamento da fase 1
+
+  function generatePhase1Schedule() {
+    const duration = CONFIG.phase1.durationSeconds;
+    const salesRemainingForLote1 = Math.max(0, CONFIG.lote1Max - state.currentSold);
+    const times = [];
+
+    if (salesRemainingForLote1 === 0 || duration <= 0) {
+      return times;
+    }
+
+    // Garantir no máximo 1 venda por segundo:
+    // sorteia "salesRemainingForLote1" segundos distintos entre 1 e duration.
+    // Obs: se alguém configurar mais vendas do que a duração em segundos,
+    // cai no fallback com possíveis segundos repetidos.
+    if (salesRemainingForLote1 <= duration) {
+      const secondsSet = new Set();
+      while (secondsSet.size < salesRemainingForLote1) {
+        const second = Math.floor(Math.random() * duration) + 1; // [1, duration]
+        secondsSet.add(second);
+      }
+      return Array.from(secondsSet).sort((a, b) => a - b);
+    } else {
+      // Fallback (não deveria ser seu caso): permite segundos repetidos
+      for (let i = 0; i < salesRemainingForLote1; i++) {
+        times.push(Math.random() * duration);
+      }
+      return times.sort((a, b) => a - b);
+    }
+  }
 
   // DOM Elements
   const progressBar = document.getElementById('lote-progress-fill');
@@ -602,6 +652,7 @@ function initBlackFridayLogic() {
     // Save state
     localStorage.setItem('bf_state_v6', JSON.stringify({ currentSold: state.currentSold, lote: state.lote, maxSold: state.maxSold }));
   }
+
   // Initial UI Update
   updateUI();
 
@@ -644,8 +695,6 @@ function initBlackFridayLogic() {
 
     // Create new individual notification with fresh name
     const name = CONFIG.names[Math.floor(Math.random() * CONFIG.names.length)];
-    const timeAgo = Math.floor(Math.random() * 2) + 1;
-
     const notification = document.createElement('div');
     notification.className = 'sales-notification';
     notification.innerHTML = `
@@ -657,7 +706,7 @@ function initBlackFridayLogic() {
           <div class="sales-notification-name">${name}</div>
           <div class="sales-notification-time">agora</div>
         </div>
-        <div class="sales-notification-text">Acabou de assinar o Plano Anual</div>
+        <div class="sales-notification-text">Acabou de assinar o plano Black Anual</div>
       </div>
     `;
 
@@ -668,9 +717,8 @@ function initBlackFridayLogic() {
       clearTimeout(clearAllTimeout);
     }
 
-    // Set new timeout to clear ALL notifications after 1.5s
+    // Set new timeout to clear ALL notifications after 2.5s
     clearAllTimeout = setTimeout(() => {
-      // Get all notifications
       const allNotifications = Array.from(notificationContainer.children);
 
       // Add hiding class to all
@@ -720,51 +768,63 @@ function initBlackFridayLogic() {
   }
 
   // Sales Logic
-  function processSales() {
-    if (!state.isActive) return;
-
-    const now = Date.now();
-    const elapsedSeconds = (now - state.startTime) / 1000;
-
-    // Determine current phase
-    let currentPhase = CONFIG.phases[0];
-    let phaseStartTime = 0;
-
-    if (elapsedSeconds > CONFIG.phases[0].duration) {
-      if (elapsedSeconds > CONFIG.phases[0].duration + CONFIG.phases[1].duration) {
-        currentPhase = CONFIG.phases[2];
-      } else {
-        currentPhase = CONFIG.phases[1];
-        phaseStartTime = CONFIG.phases[0].duration;
-      }
-    }
-
-    let target = currentPhase.target;
-
-    // Velocity Logic with RANDOMIZATION
-    // Phase 1: 116 -> 200 in 480s = 84 sales / 480s = ~0.175 sales/sec
-    // Phase 2: 200 -> 350 in 480s = 150 sales / 480s = ~0.31 sales/sec
-
-    let baseChance = 0;
-    if (currentPhase === CONFIG.phases[0]) baseChance = 0.175;
-    else if (currentPhase === CONFIG.phases[1]) baseChance = 0.31;
-    else baseChance = 0.05; // Slow for Lote 3
-
-    // Add randomization: ±30% variance
-    const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 to 1.3
-
-    const chance = baseChance * randomFactor;
-
-    if (Math.random() < chance) {
-      incrementSale();
-    }
-  }
-
   function incrementSale() {
     if (state.currentSold < 1000) {
       state.currentSold++;
       updateUI();
       showNotification();
+    }
+  }
+
+  function processSales() {
+    if (!state.isActive) return;
+
+    const now = Date.now();
+    const elapsedSeconds = (now - state.startTime) / 1000;
+    const phase1Duration = CONFIG.phase1.durationSeconds;
+
+    // === FASE 1: vendas 100% agendadas (as primeiras 42) ===
+    if (phase1Active) {
+      if (elapsedSeconds <= phase1Duration && phase1SalesDone < phase1Schedule.length) {
+        // Podem acontecer várias vendas de uma vez se o usuário "pular" tempo (ficar sem foco, etc)
+        while (
+          phase1SalesDone < phase1Schedule.length &&
+          elapsedSeconds >= phase1Schedule[phase1SalesDone]
+        ) {
+          incrementSale();
+          phase1SalesDone++;
+        }
+
+        // Se terminou todas as vendas da fase 1, desativa
+        if (phase1SalesDone >= phase1Schedule.length) {
+          phase1Active = false;
+        }
+
+        // Enquanto estamos na fase 1, não entra na fase 2/3
+        return;
+      } else {
+        // Passou o tempo da fase 1 – garante que não fique preso aqui
+        phase1Active = false;
+      }
+    }
+
+    // === FASES 2 e 3: probabilidade por segundo (ritmo configurável) ===
+    let baseChance = 0;
+
+    if (state.currentSold < CONFIG.lote2Max) {
+      // Ainda no Lote 2
+      baseChance = CONFIG.phase2.baseChancePerSecond;
+    } else {
+      // Lote 3
+      baseChance = CONFIG.phase3.baseChancePerSecond;
+    }
+
+    // Randomização em torno da média
+    const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 a 1.3
+    const chance = baseChance * randomFactor;
+
+    if (Math.random() < chance) {
+      incrementSale();
     }
   }
 
@@ -775,9 +835,15 @@ function initBlackFridayLogic() {
         state.isActive = true;
         state.startTime = Date.now();
 
+        // Gera o agendamento da FASE 1 com base no que ainda falta para chegar em 200
+        phase1Schedule = generatePhase1Schedule();
+        phase1SalesDone = 0;
+        phase1Active = phase1Schedule.length > 0;
+
+        // Inicia o loop de vendas (1x por segundo)
         setInterval(() => {
           processSales();
-        }, 1000); // Check every second
+        }, 1000);
 
         observer.disconnect();
       }

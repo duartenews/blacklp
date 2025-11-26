@@ -918,7 +918,7 @@ img {
 }
 
 .plan-card.featured .plan-users-badge {
-  color: #4b5563;
+  color: #374151;
   /* Darker gray for contrast on white */
 }
 
@@ -1282,7 +1282,7 @@ footer {
   }
 
   .floating-wpp {
-    width: 50px;
+    width: 60px;
     height: 50px;
     bottom: 20px;
     right: 20px;
@@ -1545,8 +1545,8 @@ footer {
 .lote-price-top {
   font-size: 13px;
   font-weight: 600;
-  color: #6b7280;
-  /* Muted for inactive */
+  color: #4b5563;
+  /* Darker gray for contrast */
   margin-bottom: 4px;
   transition: color 0.3s;
 }
@@ -1566,7 +1566,8 @@ footer {
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #9ca3af;
+  color: #e5e7eb;
+  /* Lighter gray for contrast on dark bg */
   margin-bottom: 4px;
   transition: all 0.3s;
 }
@@ -1583,7 +1584,7 @@ footer {
 
 .lote-status {
   font-size: 11px;
-  color: #6b7280;
+  color: #4b5563;
 }
 
 .lote-status.active {
