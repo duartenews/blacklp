@@ -5,12 +5,14 @@ function startCountdown() {
   const timerElement = document.getElementById('countdown-timer');
   const buttonTimers = document.querySelectorAll('.button-timer');
   const topBar = document.querySelector('.top-bar');
-  const duration = 13 * 60 * 1000; // 13 minutes in milliseconds
-  let endTime = localStorage.getItem('blackFridayEndTime');
+
+  // 8 minutos de contagem
+  const duration = 8 * 60 * 1000; // 8 minutes in milliseconds
+  let endTime = localStorage.getItem('blackFridayEndTime_v2');
 
   if (!endTime) {
     endTime = Date.now() + duration;
-    localStorage.setItem('blackFridayEndTime', endTime);
+    localStorage.setItem('blackFridayEndTime_v2', endTime);
   }
 
   function updateTimer() {
@@ -52,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('videoModal');
   const videoFrame = document.getElementById('deviceVideoFrame');
   const modalFooter = document.getElementById('videoModalFooter');
-  const videoUrl = 'https://www.youtube.com/embed/XT8EobvYMWc?autoplay=1&enablejsapi=1';
+  const videoUrl = 'https://www.youtube.com/embed/T8kYl8Nliic?autoplay=1&enablejsapi=1';
 
   let videoTimer = null;
 
@@ -392,25 +394,26 @@ document.addEventListener('DOMContentLoaded', () => {
 function initBlackFridayLogic() {
   // Configuration
   const CONFIG = {
-    lote1Max: 200,
-    lote2Max: 350,
-    startSold: 158,
+    // Lotes
+    lote1Max: 100,
+    lote2Max: 200,
+    startSold: 87, // começa com 87 vendas => faltam 13 para fechar o Lote 1
 
-    // === FASE 1: 42 vendas (do 158 ao 200) em 13 minutos, de forma randômica ===
+    // === FASE 1: 13 vendas (do 87 ao 100) em 8 minutos, de forma randômica ===
     phase1: {
-      // Duração total da fase 1 em segundos (13 min = 13 * 60)
-      durationSeconds: 13 * 60,
+      // Duração total da fase 1 em segundos (8 min = 8 * 60)
+      durationSeconds: 8 * 60,
     },
 
-    // === Depois do lote 1 (Lote 2 e 3) ===
-    // Controle do "ritmo" via chance média por segundo.
-    // Quanto maior o número, mais vendas por segundo em média.
+    // === FASE 2: 100 vendas (do 100 ao 200) em 30 minutos, de forma randômica ===
     phase2: {
-      // Lote 2 (do 200 ao 350) – valor original aproximado: ~0.156
-      baseChancePerSecond: 0.156
+      // Duração total da fase 2 em segundos (30 min = 30 * 60)
+      durationSeconds: 30 * 60,
     },
+
+    // === FASE 3 (Lote 3 - do 200 pra frente) ===
     phase3: {
-      // Lote 3 (do 350 pra frente) – mais lento
+      // Lote 3 (do 200 pra frente) – mais lento
       baseChancePerSecond: 0.05
     },
 
@@ -443,10 +446,16 @@ function initBlackFridayLogic() {
     maxSold: CONFIG.lote1Max
   };
 
-  // === Controle interno da FASE 1 (agendamento das 42 vendas) ===
+  // === Controle interno da FASE 1 (agendamento das 13 vendas) ===
   let phase1Schedule = [];    // lista de "segundos" em que cada venda deve acontecer
   let phase1SalesDone = 0;    // quantas vendas da fase 1 já foram feitas
   let phase1Active = false;   // se ainda estamos usando o agendamento da fase 1
+
+  // === Controle interno da FASE 2 (agendamento das 100 vendas) ===
+  let phase2Schedule = [];    // lista de "segundos" em que cada venda deve acontecer
+  let phase2SalesDone = 0;    // quantas vendas da fase 2 já foram feitas
+  let phase2Active = false;   // se ainda estamos usando o agendamento da fase 2
+  let phase2StartTime = null; // quando a fase 2 começou
 
   function generatePhase1Schedule() {
     const duration = CONFIG.phase1.durationSeconds;
@@ -459,8 +468,6 @@ function initBlackFridayLogic() {
 
     // Garantir no máximo 1 venda por segundo:
     // sorteia "salesRemainingForLote1" segundos distintos entre 1 e duration.
-    // Obs: se alguém configurar mais vendas do que a duração em segundos,
-    // cai no fallback com possíveis segundos repetidos.
     if (salesRemainingForLote1 <= duration) {
       const secondsSet = new Set();
       while (secondsSet.size < salesRemainingForLote1) {
@@ -469,8 +476,34 @@ function initBlackFridayLogic() {
       }
       return Array.from(secondsSet).sort((a, b) => a - b);
     } else {
-      // Fallback (não deveria ser seu caso): permite segundos repetidos
+      // Fallback: permite segundos repetidos
       for (let i = 0; i < salesRemainingForLote1; i++) {
+        times.push(Math.random() * duration);
+      }
+      return times.sort((a, b) => a - b);
+    }
+  }
+
+  function generatePhase2Schedule() {
+    const duration = CONFIG.phase2.durationSeconds;
+    const salesForLote2 = CONFIG.lote2Max - CONFIG.lote1Max; // 100 vendas (de 100 a 200)
+    const times = [];
+
+    if (salesForLote2 === 0 || duration <= 0) {
+      return times;
+    }
+
+    // Garantir no máximo 1 venda por segundo:
+    if (salesForLote2 <= duration) {
+      const secondsSet = new Set();
+      while (secondsSet.size < salesForLote2) {
+        const second = Math.floor(Math.random() * duration) + 1; // [1, duration]
+        secondsSet.add(second);
+      }
+      return Array.from(secondsSet).sort((a, b) => a - b);
+    } else {
+      // Fallback: permite segundos repetidos
+      for (let i = 0; i < salesForLote2; i++) {
         times.push(Math.random() * duration);
       }
       return times.sort((a, b) => a - b);
@@ -492,7 +525,7 @@ function initBlackFridayLogic() {
   const loteStatuses = document.querySelectorAll('.lote-status');
 
   // Load state from local storage
-  const savedState = localStorage.getItem('bf_state_v6');
+  const savedState = localStorage.getItem('bf_state_v7');
   if (savedState) {
     const parsed = JSON.parse(savedState);
     if (parsed.currentSold >= CONFIG.startSold) {
@@ -650,7 +683,11 @@ function initBlackFridayLogic() {
     });
 
     // Save state
-    localStorage.setItem('bf_state_v6', JSON.stringify({ currentSold: state.currentSold, lote: state.lote, maxSold: state.maxSold }));
+    localStorage.setItem('bf_state_v7', JSON.stringify({
+      currentSold: state.currentSold,
+      lote: state.lote,
+      maxSold: state.maxSold
+    }));
   }
 
   // Initial UI Update
@@ -783,10 +820,10 @@ function initBlackFridayLogic() {
     const elapsedSeconds = (now - state.startTime) / 1000;
     const phase1Duration = CONFIG.phase1.durationSeconds;
 
-    // === FASE 1: vendas 100% agendadas (as primeiras 42) ===
+    // === FASE 1: vendas 100% agendadas (13 vendas de 87 a 100) ===
     if (phase1Active) {
       if (elapsedSeconds <= phase1Duration && phase1SalesDone < phase1Schedule.length) {
-        // Podem acontecer várias vendas de uma vez se o usuário "pular" tempo (ficar sem foco, etc)
+        // Podem acontecer várias vendas de uma vez se o usuário "pular" tempo
         while (
           phase1SalesDone < phase1Schedule.length &&
           elapsedSeconds >= phase1Schedule[phase1SalesDone]
@@ -795,9 +832,14 @@ function initBlackFridayLogic() {
           phase1SalesDone++;
         }
 
-        // Se terminou todas as vendas da fase 1, desativa
+        // Se terminou todas as vendas da fase 1, desativa e ativa fase 2
         if (phase1SalesDone >= phase1Schedule.length) {
           phase1Active = false;
+          // Ativa fase 2
+          phase2Active = true;
+          phase2StartTime = Date.now();
+          phase2Schedule = generatePhase2Schedule();
+          phase2SalesDone = 0;
         }
 
         // Enquanto estamos na fase 1, não entra na fase 2/3
@@ -805,26 +847,54 @@ function initBlackFridayLogic() {
       } else {
         // Passou o tempo da fase 1 – garante que não fique preso aqui
         phase1Active = false;
+        // Ativa fase 2 se ainda não foi ativada
+        if (!phase2Active && state.currentSold < CONFIG.lote2Max) {
+          phase2Active = true;
+          phase2StartTime = Date.now();
+          phase2Schedule = generatePhase2Schedule();
+          phase2SalesDone = 0;
+        }
       }
     }
 
-    // === FASES 2 e 3: probabilidade por segundo (ritmo configurável) ===
-    let baseChance = 0;
+    // === FASE 2: vendas 100% agendadas (100 vendas de 100 a 200 em 30min) ===
+    if (phase2Active && state.currentSold >= CONFIG.lote1Max && state.currentSold < CONFIG.lote2Max) {
+      const phase2ElapsedSeconds = (now - phase2StartTime) / 1000;
+      const phase2Duration = CONFIG.phase2.durationSeconds;
 
-    if (state.currentSold < CONFIG.lote2Max) {
-      // Ainda no Lote 2
-      baseChance = CONFIG.phase2.baseChancePerSecond;
-    } else {
-      // Lote 3
-      baseChance = CONFIG.phase3.baseChancePerSecond;
+      if (phase2ElapsedSeconds <= phase2Duration && phase2SalesDone < phase2Schedule.length) {
+        // Podem acontecer várias vendas de uma vez
+        while (
+          phase2SalesDone < phase2Schedule.length &&
+          phase2ElapsedSeconds >= phase2Schedule[phase2SalesDone]
+        ) {
+          incrementSale();
+          phase2SalesDone++;
+        }
+
+        // Se terminou todas as vendas da fase 2, desativa
+        if (phase2SalesDone >= phase2Schedule.length) {
+          phase2Active = false;
+        }
+
+        // Enquanto estamos na fase 2, não entra na fase 3
+        return;
+      } else {
+        // Passou o tempo da fase 2 – garante que não fique preso aqui
+        phase2Active = false;
+      }
     }
 
-    // Randomização em torno da média
-    const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 a 1.3
-    const chance = baseChance * randomFactor;
+    // === FASE 3: probabilidade por segundo (lote 3 - mais lento) ===
+    if (state.currentSold >= CONFIG.lote2Max) {
+      const baseChance = CONFIG.phase3.baseChancePerSecond;
+      // Randomização em torno da média
+      const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 a 1.3
+      const chance = baseChance * randomFactor;
 
-    if (Math.random() < chance) {
-      incrementSale();
+      if (Math.random() < chance) {
+        incrementSale();
+      }
     }
   }
 
@@ -835,10 +905,20 @@ function initBlackFridayLogic() {
         state.isActive = true;
         state.startTime = Date.now();
 
-        // Gera o agendamento da FASE 1 com base no que ainda falta para chegar em 200
-        phase1Schedule = generatePhase1Schedule();
-        phase1SalesDone = 0;
-        phase1Active = phase1Schedule.length > 0;
+        // Decide qual fase iniciar baseado no estado atual
+        if (state.currentSold < CONFIG.lote1Max) {
+          // Ainda no Lote 1: inicia fase 1
+          phase1Schedule = generatePhase1Schedule();
+          phase1SalesDone = 0;
+          phase1Active = phase1Schedule.length > 0;
+        } else if (state.currentSold < CONFIG.lote2Max) {
+          // Já no Lote 2: inicia fase 2
+          phase2Active = true;
+          phase2StartTime = Date.now();
+          phase2Schedule = generatePhase2Schedule();
+          phase2SalesDone = 0;
+        }
+        // Se já está no Lote 3, não precisa inicializar nada (usa fase 3 probabilística)
 
         // Inicia o loop de vendas (1x por segundo)
         setInterval(() => {
