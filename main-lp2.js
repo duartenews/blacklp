@@ -456,6 +456,44 @@ function initBlackFridayLogic() {
   let phase2Active = false;   // se ainda estamos usando o agendamento da fase 2
   let phase2StartTime = null; // quando a fase 2 começou
 
+  // === Janela de tolerância do botão "Testar Agora" ===
+  const pauseStateKey = 'bf_pause_state_v1';
+  const TOLERANCE_WINDOW_MS = 5 * 60 * 1000; // 5 minutos
+  const SALES_LOOP_INTERVAL_MS = 1000;
+  let testButtonClicked = false;
+  let pauseBudgetMs = 0;
+  let currentVisibilityState = document.visibilityState || 'visible';
+  let lastSalesLoopTimestamp = Date.now();
+
+  function savePauseState() {
+    localStorage.setItem(pauseStateKey, JSON.stringify({
+      testButtonClicked,
+      pauseBudgetMs
+    }));
+  }
+
+  (function loadPauseState() {
+    const stored = localStorage.getItem(pauseStateKey);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      testButtonClicked = Boolean(parsed?.testButtonClicked);
+      pauseBudgetMs = typeof parsed?.pauseBudgetMs === 'number' ? Math.max(0, parsed.pauseBudgetMs) : 0;
+    } catch (error) {
+      localStorage.removeItem(pauseStateKey);
+    }
+  })();
+
+  function activateToleranceWindow() {
+    testButtonClicked = true;
+    pauseBudgetMs = TOLERANCE_WINDOW_MS;
+    savePauseState();
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    currentVisibilityState = document.visibilityState || 'visible';
+  });
+
   function generatePhase1Schedule() {
     const duration = CONFIG.phase1.durationSeconds;
     const remainingToLote1 = Math.max(0, CONFIG.lote1Max - state.currentSold);
@@ -517,6 +555,7 @@ function initBlackFridayLogic() {
   const notificationContainer = document.getElementById('sales-notification-container');
   const plansSection = document.querySelector('.plans-section');
   const planBtn = document.querySelector('.plan-card.featured .plan-btn');
+  const freeTestButton = document.querySelector('.cta-button.cta-free');
 
   // Lote Tabs Elements
   const loteTabs = document.querySelectorAll('.lote-tab');
@@ -687,6 +726,12 @@ function initBlackFridayLogic() {
       lote: state.lote,
       maxSold: state.maxSold
     }));
+  }
+
+  if (freeTestButton) {
+    freeTestButton.addEventListener('click', () => {
+      activateToleranceWindow();
+    });
   }
 
   // Initial UI Update
@@ -915,10 +960,29 @@ function initBlackFridayLogic() {
         }
         // Se já está no Lote 3, não precisa inicializar nada (usa fase 3 probabilística)
 
-        // Inicia o loop de vendas (1x por segundo)
+        // Inicia o loop de vendas controlado (1x por segundo)
+        lastSalesLoopTimestamp = Date.now();
         setInterval(() => {
+          const nowTick = Date.now();
+          const elapsedSinceLastTick = nowTick - lastSalesLoopTimestamp;
+          lastSalesLoopTimestamp = nowTick;
+
+          const shouldPauseSales =
+            testButtonClicked &&
+            pauseBudgetMs > 0 &&
+            currentVisibilityState === 'hidden';
+
+          if (shouldPauseSales) {
+            const updatedBudget = Math.max(0, pauseBudgetMs - elapsedSinceLastTick);
+            if (updatedBudget !== pauseBudgetMs) {
+              pauseBudgetMs = updatedBudget;
+              savePauseState();
+            }
+            return;
+          }
+
           processSales();
-        }, 1000);
+        }, SALES_LOOP_INTERVAL_MS);
 
         observer.disconnect();
       }
