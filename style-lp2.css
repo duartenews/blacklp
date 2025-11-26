@@ -1758,7 +1758,7 @@ footer {
 /* Sales Notification Container */
 #sales-notification-container {
   position: fixed;
-  top: 35px;
+  top: 5px;
   /* Below header */
   left: 50%;
   transform: translateX(-50%);
