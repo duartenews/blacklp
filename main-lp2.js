@@ -510,7 +510,7 @@ function initBlackFridayLogic() {
       let nextPrice = "297";
       if (state.lote === 2) { nextLote = "3"; nextPrice = "397"; }
 
-      subtitle.innerHTML = `faltam <b>${remaining}</b> assinaturas para o <b>Lote${nextLote}</b> 12x <b>R$${nextPrice}</b>`;
+      subtitle.innerHTML = `faltam <b>${remaining}</b> assinaturas para o <b>Lote${nextLote}</b> 12x${nextPrice}`;
     }
 
     // Price Display Update
@@ -520,14 +520,14 @@ function initBlackFridayLogic() {
 
     if (priceDisplay) {
       const currentPrice = state.lote === 1 ? "197" : (state.lote === 2 ? "297" : "397");
-      priceDisplay.textContent = `12x de R$ ${currentPrice}`;
+      priceDisplay.textContent = `12x ${currentPrice}`;
     }
     if (priceCounter) {
       priceCounter.innerHTML = `<strong>Lote ${state.lote} - Acaba em ${remaining} vagas</strong>`;
     }
     if (footerText) {
       const nextPrice = state.lote === 1 ? "297" : (state.lote === 2 ? "397" : "497");
-      footerText.innerHTML = `o preço subirá para <strong>12x R$${nextPrice}</strong> acabando as próximas <span id="footer-remaining-count">${remaining}</span> vagas`;
+      footerText.innerHTML = `Acabando as vagas do Lote ${state.lote}, o preço sobe para <strong>12x de ${nextPrice}</strong>`;
     }
 
     // Button Link
@@ -626,12 +626,15 @@ function initBlackFridayLogic() {
       const summary = document.createElement('div');
       summary.className = 'sales-notification summary';
       summary.innerHTML = `
-        <div class="sales-notification-icon" style="background: #e6c39c; color: #000;">
-          <i class="fa-solid fa-bolt"></i>
+        <div class="sales-notification-icon">
+          <img src="https://secretariaplus.com.br/wp-content/uploads/2025/01/icon.png" alt="SecretáriaPlus">
         </div>
         <div class="sales-notification-content">
-          <div class="sales-notification-name">+${summaryCount} ${summaryCount === 1 ? 'nova assinatura' : 'novas assinaturas'}</div>
-          <div class="sales-notification-text">nos últimos segundos</div>
+          <div class="sales-notification-header">
+            <div class="sales-notification-name">SecretáriaPlus</div>
+            <div class="sales-notification-time">Agora</div>
+          </div>
+          <div class="sales-notification-text">+${summaryCount} ${summaryCount === 1 ? 'nova assinatura' : 'novas assinaturas'} nos últimos segundos</div>
         </div>
       `;
       notificationContainer.appendChild(summary);
@@ -645,12 +648,14 @@ function initBlackFridayLogic() {
     notification.className = 'sales-notification';
     notification.innerHTML = `
       <div class="sales-notification-icon">
-        <i class="fa-solid fa-check"></i>
+        <img src="https://secretariaplus.com.br/wp-content/uploads/2025/01/icon.png" alt="SecretáriaPlus">
       </div>
       <div class="sales-notification-content">
-        <div class="sales-notification-name">${name}</div>
+        <div class="sales-notification-header">
+          <div class="sales-notification-name">${name}</div>
+          <div class="sales-notification-time">agora</div>
+        </div>
         <div class="sales-notification-text">Acabou de assinar o Plano Anual</div>
-        <div class="sales-notification-time">há ${timeAgo} minutos</div>
       </div>
     `;
 
