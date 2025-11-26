@@ -1768,7 +1768,7 @@ footer {
   /* Stack from top down */
   gap: 6px;
   pointer-events: none;
-  width: 95%;
+  width: 93%;
   max-width: 600px;
 }
 
