@@ -402,19 +402,22 @@ function initBlackFridayLogic() {
     // === FASE 1: 13 vendas (do 87 ao 100) em 8 minutos, de forma randômica ===
     phase1: {
       // Duração total da fase 1 em segundos (8 min = 8 * 60)
+      // ~37 segundos por notificação
       durationSeconds: 8 * 60,
     },
 
-    // === FASE 2: 100 vendas (do 100 ao 200) em 30 minutos, de forma randômica ===
+    // === FASE 2: 100 vendas (do 100 ao 200) em 42 minutos, de forma randômica ===
     phase2: {
-      // Duração total da fase 2 em segundos (30 min = 30 * 60)
-      durationSeconds: 30 * 60,
+      // Duração total da fase 2 em segundos (42 min = 42 * 60)
+      // ~25 segundos por notificação
+      durationSeconds: 42 * 60,
     },
 
     // === FASE 3 (Lote 3 - do 200 pra frente) ===
     phase3: {
-      // Lote 3 (do 200 pra frente) – mais lento
-      baseChancePerSecond: 0.05
+      // Lote 3 (do 200 pra frente) – média de 1min30s por notificação
+      // 1 venda a cada ~90 segundos = chance de 1/90 por segundo ≈ 0.0111
+      baseChancePerSecond: 0.0111
     },
 
     lote1Link: 'https://pay.hub.la/checkout/PLACEHOLDER_197',
