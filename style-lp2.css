@@ -917,6 +917,11 @@ img {
   color: var(--text-muted);
 }
 
+.plan-card.featured .plan-users-badge {
+  color: #4b5563;
+  /* Darker gray for contrast on white */
+}
+
 .plan-users-badge img {
   height: 20px;
 }
@@ -1547,8 +1552,8 @@ footer {
 }
 
 .lote-price-top.active {
-  color: #e6c39c;
-  /* Gold for active */
+  color: #8a6030;
+  /* Darker gold for contrast */
   font-weight: 700;
 }
 
@@ -1582,7 +1587,7 @@ footer {
 }
 
 .lote-status.active {
-  color: #e6c39c;
+  color: #8a6030;
   font-weight: 600;
 }
 
@@ -1631,7 +1636,8 @@ footer {
 
 .lote-subtitle-small {
   font-size: 12px;
-  color: #9ca3af;
+  color: #4b5563;
+  /* Darker gray for contrast */
   margin-bottom: 15px;
   text-align: center;
 }

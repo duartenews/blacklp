@@ -32,7 +32,9 @@ function startCountdown() {
     const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
     const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} `;
 
-    timerElement.textContent = timeString;
+    if (timerElement) {
+      timerElement.textContent = timeString;
+    }
     buttonTimers.forEach(timer => timer.textContent = `(${timeString})`);
   }
 
