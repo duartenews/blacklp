@@ -13,13 +13,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style-lp2.css">
+  <link rel="preconnect" href="https://vumbnail.com">
+  <link rel="preconnect" href="https://secretariaplus.com.br">
 </head>
 
 <body>
   <div id="app">
     <!-- Top Bar -->
     <div class="top-bar">
-      OFERTA ESPECIAL BLACK ACABA EM <span id="countdown-timer" style="margin-left: 5px; font-weight: bold;"></span>
+      <div class="top-bar-progress-container">
+        <div class="top-bar-progress-fill" id="topBarProgressFill"></div>
+        <span class="top-bar-text" id="topBarText">ÚLTIMAS VAGAS DO LOTE R$197</span>
+      </div>
     </div>
 
     <!-- Sticky Checks Bar (hidden by default, shown when scrolling past features) -->
@@ -151,15 +156,16 @@
           class="hero-decorative-botox-right" width="90" height="147" loading="lazy">
         <img src="https://secretariaplus.com.br/wp-content/uploads/2025/03/lalala2.png" alt="Botox"
           class="hero-decorative-botox-left" width="90" height="147" loading="lazy">
-        <h1 class="hero-title">Sem tempo e perdendo oportunidades no WhatsApp da sua clínica?</h1>
-        <p class="hero-subtitle">✦ IA que converte até 35% do tráfego pago</p>
+        <h1 class="hero-title">Sem tempo pra responder WhatsApp e vendo paciente escorrer pelos dedos?</h1>
+        <p class="hero-subtitle">✦ A SecretáriaPlus resolve isso pra você com IA que vende harmonização 24h por dia.</p>
 
         <div class="video-container" id="heroVideoContainer">
           <div class="video-facade" data-video-id="998962053" data-video-hash="8659d527fb">
             <div class="play-button">
               <i class="fa-solid fa-play"></i>
             </div>
-            <img src="https://vumbnail.com/998962053.jpg" alt="Video Thumbnail" class="video-thumbnail" loading="lazy">
+            <img src="https://vumbnail.com/998962053.jpg" alt="Video Thumbnail" class="video-thumbnail"
+              fetchpriority="high">
           </div>
         </div>
 
@@ -417,7 +423,7 @@
           <div class="feature-card">
             <h3 class="feature-number">2. Agenda integrada</h3>
             <h4 class="feature-subtitle">Agende no automático</h4>
-            <p class="feature-description">A I.A na própria conversa propõe horários e confirma consultas - alimentando
+            <p class="feature-description">A I.A na própria conversa propõe horários e agenda consultas - alimentando
               a agenda do sistema</p>
             <div class="feature-image">
               <img src="https://secretariaplus.com.br/wp-content/uploads/2025/03/adsasd.jpg" alt="Agenda integrada"
@@ -562,8 +568,8 @@
               </div>
             </div>
 
-            <a href="https://flow.secretariaplus.com.br/?utm_source=website&utm_medium=btn_teste&sck=undefined"
-              target="_blank" rel="noopener" class="cta-button cta-free">
+            <a href="https://flow.secretariaplus.com.br/?black" target="_blank" rel="noopener"
+              class="cta-button cta-free">
               Testar Agora
               <svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
@@ -576,6 +582,34 @@
           <div class="plan-card featured">
             <div class="best-option-tag">★ Melhor Opção ★</div>
             <h3>BLACK ANUAL</h3>
+            <div class="lote-info-container">
+              <div class="lote-tabs-grid">
+                <!-- Prices -->
+                <div class="lote-col">
+                  <span class="lote-price-top active">R$ 197</span>
+                  <div class="lote-tab active">Lote 1</div>
+                  <span class="lote-status active">atual</span>
+                </div>
+                <div class="lote-col">
+                  <span class="lote-price-top">R$ 297</span>
+                  <div class="lote-tab">Lote 2</div>
+                  <span class="lote-status">faltam <span class="lote-remaining-count">84</span></span>
+                </div>
+                <div class="lote-col">
+                  <span class="lote-price-top">R$ 397</span>
+                  <div class="lote-tab">Lote 3</div>
+                  <span class="lote-status">faltam 234</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="price-wrapper">
+              <p class="lote-subtitle-small">faltam <span class="lote-remaining-count">84</span> para o <b>Lote 2</b>
+                12x <b>R$297</b>
+              </p>
+            </div>
+
+
             <ul class="plan-features">
               <li>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -698,10 +732,21 @@
                 </li>
               </ul>
             </div>
-            <div class="price-comparison">
-              <span class="old-price">De R$ 597/mês</span>
-              <span class="new-price">12x de R$ 297</span>
-              <span class="price-detail">Apenas 1 paciente a mais/mês já se paga.</span>
+            <div class="price-info-block">
+              <span class="old-price-strikethrough">Preço normal: ~12x de R$ 597~</span>
+              <div class="current-price-large" id="current-price-display">
+                12x de R$ 197
+              </div>
+              <span class="price-subtitle">Apenas 1 paciente a mais/mês já se paga.</span>
+              <span class="price-counter" id="price-counter-top"><strong></strong>Lote 1 - Acaba em 84
+                vagas</strong></span>
+            </div>
+            <div class="lote-progress-bar-container">
+              <div class="lote-progress-bar-blue">
+                <div class="lote-progress-fill-blue" id="lote-progress-fill" style="width: 58%;"></div>
+                <span class="lote-progress-text-inside"><span id="lote-sold-count">116</span> / <span
+                    id="lote-max-sold">200</span></span>
+              </div>
             </div>
             <!-- <span class="old-price">De R$ 597/mês</span>
             <div class="price">
@@ -710,7 +755,8 @@
             </div> -->
             <button class="plan-btn primary">Assinar Agora <span class="arrow-rotate">⬅</span> <span
                 class="button-timer"></span></button>
-            <span class="price-detail">R$1.200 ou 25% mais barato em relação ao plano mensal</span>
+            <p class="urgency-footer-text">o preço subirá para <strong>12x R$297</strong> acabando as próximas <span
+                id="footer-remaining-count">84</span> vagas</p>
             <div class="plan-users-badge">
               <img src="https://secretariaplus.com.br/wp-content/uploads/2024/07/Usuarios.png" alt="Usuários" width="87"
                 height="20" loading="lazy">
@@ -736,6 +782,8 @@
           </div>
 
           <!-- Plan 2: Mensal Simples -->
+          <!-- Plan 2: Mensal Simples (Hidden for Black Friday) -->
+          <!-- 
           <div class="plan-card">
             <h3>Mensal Simples</h3>
             <div class="price-comparison">
@@ -751,6 +799,7 @@
             </div>
             <span class="price-detail">Quer economizar mais? veja o plano anual BLACK.</span>
           </div>
+           -->
 
         </div>
       </div>
@@ -792,10 +841,11 @@
               <span class="toggle-icon">+</span>
             </div>
             <div class="faq-answer">
-              Será feita no cartão de crédito de acordo com seu plano escolhido. A renovação é automática — caso
+              É um plano de assinatura anual, ou seja a cada 12 meses é cobrado novamente no cartão de crédito, quem
+              assinar nesse valor ele se manterá nas próximas renovações. A renovação é automática — caso
               precise, basta cancelar antes da renovação.
-              Não há multas em caso de cancelamento.
-              Em planos anuais, a cobrança é total no dia da compra (podendo ser parcelada pelo banco), e a renovação
+              Não há multas em caso de cancelamento. A cobrança é feita no valor integral no dia da compra (podendo ser
+              parcelada pelo banco), e a renovação
               ocorre apenas no ano seguinte.
             </div>
           </div>
@@ -839,7 +889,7 @@
               <span class="toggle-icon">+</span>
             </div>
             <div class="faq-answer">
-              Apenas em casos de instabildiades com os servidores da Meta que gerencia o WhatsApp/Facebook, eles são os
+              Apenas em casos de instabilidades com os servidores da Meta que gerencia o WhatsApp/Facebook, eles são os
               provedores essenciais, caso eles tenham problemas isso pode afetar a funcionalidade do sistema, mas isso é
               muito raro. Porém somos transparentes e nos comunicamos com você caso isso aconteça.
             </div>
@@ -891,9 +941,13 @@
     </footer>
 
     <!-- Floating WhatsApp -->
-    <a href="#" class="floating-wpp">
+    <a href="https://api.whatsapp.com/send?phone=5511936191391&text=Ol%C3%A1%2C%20tenho%20interesse%20na%20Black%20Secret%C3%A1riaPlus"
+      target="_blank" class="floating-wpp">
       <img src="https://secretariaplus-demo-flow.vercel.app/imgs/wpp.webp" alt="WhatsApp">
     </a>
+
+    <!-- Sales Notification Container -->
+    <div id="sales-notification-container"></div>
   </div>
   <script type="module" src="/main-lp2.js"></script>
 </body>
