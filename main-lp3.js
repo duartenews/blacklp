@@ -143,6 +143,8 @@ document.addEventListener('click', (e) => {
       iframe.allow = 'autoplay; fullscreen; picture-in-picture';
       iframe.allowFullscreen = true;
       iframe.style.aspectRatio = '16/9'; // Ensure correct aspect ratio
+      iframe.setAttribute('playsinline', '');
+      iframe.setAttribute('title', 'SecretáriaPlus Player');
 
       // Replace facade with iframe
       const parent = facade.parentElement;
@@ -151,6 +153,15 @@ document.addEventListener('click', (e) => {
         parent.appendChild(iframe);
         // Ensure parent maintains layout
         parent.style.display = 'block';
+
+        // Force play once iframe is ready so the visitor doesn't need to click twice
+        iframe.addEventListener('load', () => {
+          try {
+            iframe.contentWindow?.postMessage(JSON.stringify({ method: 'play' }), '*');
+          } catch (err) {
+            console.error('Failed to trigger Vimeo autoplay', err);
+          }
+        });
       }
     }
   }
