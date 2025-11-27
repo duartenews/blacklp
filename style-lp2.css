@@ -742,6 +742,53 @@ img {
   gap: 3px;
 }
 
+@media (min-width: 1024px) {
+  .plans-section {
+    padding: 140px 0;
+  }
+
+  .plans-section .container {
+    max-width: 1280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 40px;
+  }
+
+  .plans-section .section-title {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+
+  .plans-grid {
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .plan-card {
+    height: 100%;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .plan-card.card-free,
+  .plan-card.featured {
+    justify-self: stretch;
+  }
+
+  .plan-card.featured {
+    transform: none;
+  }
+}
 .plan-features li svg {
   color: #000000;
   flex-shrink: 0;
@@ -764,6 +811,20 @@ img {
   border-radius: 8px;
   margin-bottom: 30px;
   text-align: left;
+}
+
+.special-offer-box .plan-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 24px;
+}
+
+.special-offer-box .plan-image img {
+  display: block;
+  max-width: 320px;
+  width: 100%;
+  height: auto;
 }
 
 .special-offer-box h4 {
