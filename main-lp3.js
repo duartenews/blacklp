@@ -455,45 +455,39 @@ function initLp3Lotes() {
     const activeLote = getActiveLote(now);
     const nextLote = getNextLote(activeLote.id);
     const progress = getProgressPercentage(activeLote, now);
-    const deadlineCopy = getLoteDeadlineCopy(activeLote.id);
-    const isBlackExtendida = activeLote.id === 1;
+    const isBlackEstendida = activeLote.id === 1;
 
     if (progressBar) {
       progressBar.style.width = `${progress}%`;
-      const { start, end } = getThermometerColors(progress, isBlackExtendida);
+      const { start, end } = getThermometerColors(progress, isBlackEstendida);
       progressBar.style.background = `linear-gradient(90deg, ${start}, ${end})`;
     }
 
     if (progressText) {
-      progressText.textContent = isBlackExtendida ? '🔥 BLACK ESTENDIDA' : `LOTE ${activeLote.id} finalizando...`;
+      progressText.textContent = isBlackEstendida ? '🔥 BLACK ESTENDIDA' : `Finalizando...`;
     }
-
-    remainingCountElements.forEach(el => {
-      el.textContent = activeLote.id === 1 ? '+25 vagas' : 'Vagas limitadas';
-    });
 
     if (priceDisplay) {
       priceDisplay.textContent = `12x ${activeLote.price}`;
     }
 
     if (priceCounter) {
-      priceCounter.innerHTML = `<strong>Lote ${activeLote.id}</strong> - acaba ${deadlineCopy}`;
+      priceCounter.innerHTML = isBlackEstendida 
+        ? `<strong>🔥 BLACK ESTENDIDA</strong> - Acaba às 23:59`
+        : `Acaba em breve`;
     }
 
     if (subtitle) {
       if (activeLote.id === 1) {
-        subtitle.innerHTML = '<b>🔥 BLACK ESTENDIDA! Lote 1 válido até 23:59 de hoje ou +25 vagas.</b>';
+        subtitle.innerHTML = '<b>🔥 BLACK ESTENDIDA! Válido até às 23:59 de hoje.</b>';
       } else {
-        const nextInfo = nextLote
-          ? `Assim que esse lote virar, o valor vai para <b>12x ${nextLote.price}</b>.`
-          : 'Esse é o último lote disponível.';
-        subtitle.innerHTML = `<b>Lote ${activeLote.id}</b> se encerra ${deadlineCopy}. ${nextInfo}`;
+        subtitle.innerHTML = `Oferta por tempo limitado.`;
       }
     }
 
     if (footerText) {
-      if (nextLote) {
-        footerText.innerHTML = `As vagas do Lote ${activeLote.id} podem acabar a qualquer momento e o preço sobe para <strong>12x ${nextLote.price}</strong>.`;
+      if (isBlackEstendida) {
+        footerText.innerHTML = `🔥 BLACK ESTENDIDA: o preço subirá para <strong>12x R$297</strong> às 23:59`;
       } else {
         footerText.innerHTML = `Últimas vagas no valor atual de <strong>12x ${activeLote.price}</strong>.`;
       }
@@ -511,7 +505,7 @@ function initLp3Lotes() {
 
     if (topBarFill) {
       topBarFill.style.width = `${progress}%`;
-      const { start, end } = getThermometerColors(progress, isBlackExtendida);
+      const { start, end } = getThermometerColors(progress, isBlackEstendida);
       topBarFill.style.background = `linear-gradient(90deg, ${start}, ${end})`;
     }
 
