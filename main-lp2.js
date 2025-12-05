@@ -1,43 +1,41 @@
 import './style-lp2.css'
 
-// Countdown Timer Logic
+// Countdown Timer Logic - Until 23:59 today
 function startCountdown() {
-  const timerElement = document.getElementById('countdown-timer');
-  const buttonTimers = document.querySelectorAll('.button-timer');
-  const topBar = document.querySelector('.top-bar');
-
-  // 8 minutos de contagem
-  const duration = 8 * 60 * 1000; // 8 minutes in milliseconds
-  let endTime = localStorage.getItem('blackFridayEndTime_v2');
-
-  if (!endTime) {
-    endTime = Date.now() + duration;
-    localStorage.setItem('blackFridayEndTime_v2', endTime);
+  // Calculate end of day (23:59:59)
+  function getEndOfDay() {
+    const now = new Date();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return endOfDay.getTime();
   }
+
+  const endTime = getEndOfDay();
 
   function updateTimer() {
     const now = Date.now();
     const remaining = endTime - now;
 
+    let timeString;
     if (remaining <= 0) {
-      // Countdown expired
-      if (timerElement) {
-        timerElement.style.display = 'none';
-      }
-      buttonTimers.forEach(timer => {
-        timer.style.display = 'none';
-      });
-      return;
+      timeString = '00:00:00';
+    } else {
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+      timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-    const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} `;
-
-    if (timerElement) {
-      timerElement.textContent = timeString;
+    // Update topbar countdown
+    const topbarCountdown = document.getElementById('topbar-countdown');
+    if (topbarCountdown) {
+      topbarCountdown.textContent = timeString;
     }
-    buttonTimers.forEach(timer => timer.textContent = `(${timeString})`);
+    
+    // Update button timers (re-query every time in case DOM changed)
+    const buttonTimers = document.querySelectorAll('.button-timer');
+    buttonTimers.forEach(timer => {
+      timer.textContent = `(${timeString})`;
+    });
   }
 
   updateTimer(); // Initial call
@@ -276,115 +274,7 @@ window.addEventListener('resize', () => {
   testimonialsTrack.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
 });
 
-// Sticky Bar Swap Logic
-const topBar = document.querySelector('.top-bar');
-const stickyChecksBar = document.getElementById('stickyChecksBar');
-const featuresSection = document.querySelector('.features-section');
-const plansSection = document.querySelector('.plans-section');
-
-let ticking = false;
-
-function handleStickySwap() {
-  if (!featuresSection) return;
-
-  const featuresSectionTop = featuresSection.getBoundingClientRect().top;
-  const plansSectionTop = plansSection ? plansSection.getBoundingClientRect().top : Infinity;
-  const topBarHeight = topBar ? topBar.offsetHeight : 40;
-  const triggerPoint = topBarHeight + 50; // Trigger when section is near top
-
-  // Logic:
-  // 1. Default: Show Top Bar
-  // 2. Features Section Reached: Show Sticky Checks Bar (Hide Top Bar)
-  // 3. Plans Section Reached: Show Top Bar (Hide Sticky Checks Bar)
-
-  if (plansSectionTop <= triggerPoint) {
-    // Case 3: Plans Section Reached -> Show Top Bar
-    if (topBar) topBar.classList.remove('hidden');
-    if (stickyChecksBar) stickyChecksBar.classList.remove('visible');
-  } else if (featuresSectionTop <= triggerPoint) {
-    // Case 2: Features Section Reached -> Show Sticky Checks Bar
-    if (topBar) topBar.classList.add('hidden');
-    if (stickyChecksBar) stickyChecksBar.classList.add('visible');
-  } else {
-    // Case 1: Default -> Show Top Bar
-    if (topBar) topBar.classList.remove('hidden');
-    if (stickyChecksBar) stickyChecksBar.classList.remove('visible');
-  }
-
-  ticking = false;
-}
-
-function requestTick() {
-  if (!ticking) {
-    window.requestAnimationFrame(handleStickySwap);
-    ticking = true;
-  }
-}
-
-// Listen to scroll events with throttling for better mobile performance
-window.addEventListener('scroll', requestTick, { passive: true });
-
-// Initial check
-handleStickySwap();
-
-// Top Bar Section Observer - 3 States
-document.addEventListener('DOMContentLoaded', () => {
-  const topBar = document.querySelector('.top-bar');
-  const topBarProgressContainer = document.querySelector('.top-bar-progress-container');
-  const topBarText = document.getElementById('topBarText');
-
-  if (!topBar || !topBarProgressContainer || !topBarText) return;
-
-  // Set initial state to simple
-  const topBarFill = document.getElementById('topBarProgressFill');
-  if (topBarFill) topBarFill.style.display = 'none';
-
-  topBar.style.padding = '12px';
-  topBar.style.background = 'linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%)';
-  topBarText.style.textShadow = 'none';
-  topBarText.style.color = 'var(--accent-color)';
-
-  let currentState = 'simple'; // 'simple' or 'progress'
-
-  const sectionObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const sectionClass = entry.target.className;
-
-        if (sectionClass.includes('hero-section') || sectionClass.includes('features-section')) {
-          // Simple text state (hero and features)
-          if (currentState !== 'simple') {
-            if (topBarFill) topBarFill.style.display = 'none';
-            topBar.style.padding = '12px';
-            topBar.style.background = 'linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%)';
-            topBarText.style.textShadow = 'none';
-            topBarText.style.color = 'var(--accent-color)';
-            currentState = 'simple';
-          }
-        } else if (sectionClass.includes('plans-section')) {
-          // Progress bar state (plans)
-          if (currentState !== 'progress') {
-            if (topBarFill) topBarFill.style.display = 'block';
-            topBar.style.padding = '0';
-            topBar.style.background = '#000';
-            topBarText.style.textShadow = '0 1px 3px rgba(0, 0, 0, 0.8)';
-            topBarText.style.color = '#fff';
-            currentState = 'progress';
-          }
-        }
-      }
-    });
-  }, { threshold: 0.3 });
-
-  // Observe sections
-  const heroSection = document.querySelector('.hero-section');
-  const featuresSection = document.querySelector('.features-section');
-  const plansSection = document.querySelector('.plans-section');
-
-  if (heroSection) sectionObserver.observe(heroSection);
-  if (featuresSection) sectionObserver.observe(featuresSection);
-  if (plansSection) sectionObserver.observe(plansSection);
-});
+// Top bar stays fixed with countdown - no section observers needed
 
 // Black Friday Logic
 document.addEventListener('DOMContentLoaded', () => {
@@ -687,16 +577,6 @@ function initBlackFridayLogic() {
     const lote3Status = document.querySelector('.lote-col:nth-child(3) .lote-status');
     if (lote3Status && state.lote < 3) lote3Status.innerHTML = `faltam ${lote3Remaining}`;
 
-    // Subtitle Dynamic Text
-    const subtitle = document.querySelector('.lote-subtitle-small');
-    if (subtitle) {
-      let nextLote = "2";
-      let nextPrice = "297";
-      if (state.lote === 2) { nextLote = "3"; nextPrice = "397"; }
-
-      subtitle.innerHTML = `faltam <b>${remaining}</b> assinaturas para o <b>Lote${nextLote}</b> 12x${nextPrice}`;
-    }
-
     // Price Display Update
     const priceDisplay = document.getElementById('current-price-display');
     const priceCounter = document.getElementById('price-counter-top');
@@ -729,15 +609,11 @@ function initBlackFridayLogic() {
       planBtn.innerHTML = `Assinar Agora <i class="fa-solid fa-right-long"></i> <span class="button-timer"></span>`;
     }
 
-    // Top Bar Progress Update
+    // Top Bar Progress Update - Keep the countdown text, just update progress bar
     const topBar = document.querySelector('.top-bar');
     const topBarFill = document.getElementById('topBarProgressFill');
-    const topBarText = document.getElementById('topBarText');
 
-    if (topBar && topBarFill && topBarText) {
-      const currentPrice = state.lote === 1 ? "197" : (state.lote === 2 ? "297" : "397");
-      topBarText.textContent = `ÚLTIMAS VAGAS DO LOTE R$${currentPrice}`;
-
+    if (topBar && topBarFill) {
       // Calculate progress percentage (how full the current lote is)
       const percentage = (state.currentSold / state.maxSold) * 100;
       topBarFill.style.width = `${percentage}%`;
