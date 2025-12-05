@@ -346,34 +346,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!topBar || !topBarProgressContainer || !topBarText) return;
 
-  // Set initial state to simple
+  // Set initial state to progress (vermelho) para BLACK EXTENDIDA
   const topBarFill = document.getElementById('topBarProgressFill');
-  if (topBarFill) topBarFill.style.display = 'none';
+  if (topBarFill) topBarFill.style.display = 'block';
 
-  topBar.style.padding = '12px';
-  topBar.style.background = 'linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%)';
-  topBarText.style.textShadow = 'none';
-  topBarText.style.color = 'var(--accent-color)';
+  topBar.style.padding = '0';
+  topBar.style.background = '#000';
+  topBarText.style.textShadow = '0 1px 3px rgba(0, 0, 0, 0.8)';
+  topBarText.style.color = '#fff';
 
-  let currentState = 'simple'; // 'simple' or 'progress'
+  let currentState = 'progress'; // Sempre 'progress' para BLACK EXTENDIDA
 
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const sectionClass = entry.target.className;
 
-        if (sectionClass.includes('hero-section') || sectionClass.includes('features-section')) {
-          // Simple text state (hero and features)
-          if (currentState !== 'simple') {
-            if (topBarFill) topBarFill.style.display = 'none';
-            topBar.style.padding = '12px';
-            topBar.style.background = 'linear-gradient(90deg, #000 0%, #1a1a1a 50%, #000 100%)';
-            topBarText.style.textShadow = 'none';
-            topBarText.style.color = 'var(--accent-color)';
-            currentState = 'simple';
-          }
-        } else if (sectionClass.includes('plans-section')) {
-          // Progress bar state (plans)
+        // Para BLACK EXTENDIDA: manter sempre a barra vermelha de progresso
+        if (sectionClass.includes('hero-section') || sectionClass.includes('features-section') || sectionClass.includes('plans-section')) {
+          // Progress bar state (always red for BLACK EXTENDIDA)
           if (currentState !== 'progress') {
             if (topBarFill) topBarFill.style.display = 'block';
             topBar.style.padding = '0';
@@ -398,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // LP3 date-based lote logic & notifications
+// BLACK EXTENDIDA: Lote 1 estendido até 23:59 de 05/12 ou 100 vagas
 const LP3_LOTES = [
   {
     id: 1,
@@ -405,22 +397,22 @@ const LP3_LOTES = [
     nextPrice: '297',
     ctaLink: 'https://pay.hub.la/4vKjlCIm6mnGZugbaX4m',
     startDate: new Date('2025-11-20T00:00:00-03:00'),
-    endDate: new Date('2025-11-30T23:59:59-03:00')
+    endDate: new Date('2025-12-05T23:59:59-03:00')
   },
   {
     id: 2,
     price: '297',
     nextPrice: '397',
     ctaLink: 'https://pay.hub.la/TBDnrhvmPo4DJmJTJziT',
-    startDate: new Date('2025-12-01T00:00:00-03:00'),
-    endDate: new Date('2025-12-04T23:59:59-03:00')
+    startDate: new Date('2025-12-06T00:00:00-03:00'),
+    endDate: new Date('2025-12-10T23:59:59-03:00')
   },
   {
     id: 3,
     price: '397',
     nextPrice: null,
     ctaLink: 'https://pay.hub.la/V9jpzuZOA63avK45EkAg',
-    startDate: new Date('2025-12-05T00:00:00-03:00'),
+    startDate: new Date('2025-12-11T00:00:00-03:00'),
     endDate: null
   }
 ];
@@ -464,19 +456,20 @@ function initLp3Lotes() {
     const nextLote = getNextLote(activeLote.id);
     const progress = getProgressPercentage(activeLote, now);
     const deadlineCopy = getLoteDeadlineCopy(activeLote.id);
+    const isBlackExtendida = activeLote.id === 1;
 
     if (progressBar) {
       progressBar.style.width = `${progress}%`;
-      const { start, end } = getThermometerColors(progress);
+      const { start, end } = getThermometerColors(progress, isBlackExtendida);
       progressBar.style.background = `linear-gradient(90deg, ${start}, ${end})`;
     }
 
     if (progressText) {
-      progressText.textContent = `LOTE ${activeLote.id} finalizando...`;
+      progressText.textContent = isBlackExtendida ? '🔥 BLACK EXTENDIDA' : `LOTE ${activeLote.id} finalizando...`;
     }
 
     remainingCountElements.forEach(el => {
-      el.textContent = activeLote.id === 1 ? 'Primeiras 100 vagas' : 'Vagas limitadas';
+      el.textContent = activeLote.id === 1 ? '+25 vagas' : 'Vagas limitadas';
     });
 
     if (priceDisplay) {
@@ -489,7 +482,7 @@ function initLp3Lotes() {
 
     if (subtitle) {
       if (activeLote.id === 1) {
-        subtitle.innerHTML = '<b>Lote 1 válido pelas primeiras 100 vagas ou até 30/11.</b>';
+        subtitle.innerHTML = '<b>🔥 BLACK EXTENDIDA! Lote 1 válido até 23:59 de hoje ou +25 vagas.</b>';
       } else {
         const nextInfo = nextLote
           ? `Assim que esse lote virar, o valor vai para <b>12x ${nextLote.price}</b>.`
@@ -513,12 +506,12 @@ function initLp3Lotes() {
     }
 
     if (topBarText) {
-      topBarText.textContent = `ÚLTIMAS VAGAS DO LOTE R$${activeLote.price}`;
+      topBarText.textContent = `🔥 BLACK EXTENDIDA - 12x R$${activeLote.price}`;
     }
 
     if (topBarFill) {
       topBarFill.style.width = `${progress}%`;
-      const { start, end } = getThermometerColors(progress);
+      const { start, end } = getThermometerColors(progress, isBlackExtendida);
       topBarFill.style.background = `linear-gradient(90deg, ${start}, ${end})`;
     }
 
@@ -589,6 +582,7 @@ function updateLoteTabs(activeId, activeProgress = 90) {
   const loteTabs = document.querySelectorAll('.lote-tab');
   const lotePrices = document.querySelectorAll('.lote-price-top');
   const loteStatuses = document.querySelectorAll('.lote-status');
+  const isBlackExtendida = activeId === 1;
 
   LP3_LOTES.forEach((lote, index) => {
     const tab = loteTabs[index];
@@ -606,7 +600,7 @@ function updateLoteTabs(activeId, activeProgress = 90) {
       status.classList.add('active');
       if (lote.id === 1) {
         status.textContent = 'acabando';
-        applyLoteTabGradient(tab, activeProgress);
+        applyLoteTabGradient(tab, activeProgress, isBlackExtendida);
       } else {
         status.textContent = 'atual';
       }
@@ -625,7 +619,12 @@ function updateLoteTabs(activeId, activeProgress = 90) {
   });
 }
 
-function getThermometerColors(percentage) {
+function getThermometerColors(percentage, forceRed = false) {
+  // Para BLACK EXTENDIDA, sempre usar vermelho
+  if (forceRed) {
+    return { start: 'rgb(220, 38, 38)', end: 'rgb(239, 68, 68)' };
+  }
+  
   if (percentage < 50) {
     const ratio = percentage / 50;
     const start = `rgb(${Math.round(34 + (212 - 34) * ratio)}, ${Math.round(197 + (175 - 197) * ratio)}, ${Math.round(94 + (140 - 94) * ratio)})`;
@@ -646,13 +645,13 @@ function getThermometerColors(percentage) {
 
 function getLoteDeadlineCopy(loteId) {
   if (loteId === 1) {
-    return 'ao final das primeiras 100 vagas ou dia 30/11';
+    return 'às 23:59 de hoje ou em +25 vendas';
   }
   return 'ao final das vagas deste lote';
 }
 
-function applyLoteTabGradient(tabElement, progressValue = 90) {
-  const { start, end } = getThermometerColors(progressValue);
+function applyLoteTabGradient(tabElement, progressValue = 90, forceRed = false) {
+  const { start, end } = getThermometerColors(progressValue, forceRed);
   tabElement.style.background = `linear-gradient(90deg, ${start}, ${end})`;
   tabElement.style.borderColor = 'transparent';
   tabElement.style.color = '#fff';
