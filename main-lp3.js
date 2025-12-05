@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!topBar || !topBarProgressContainer || !topBarText) return;
 
-  // Set initial state to progress (vermelho) para BLACK EXTENDIDA
+  // Set initial state to progress (vermelho) para BLACK ESTENDIDA
   const topBarFill = document.getElementById('topBarProgressFill');
   if (topBarFill) topBarFill.style.display = 'block';
 
@@ -355,16 +355,16 @@ document.addEventListener('DOMContentLoaded', () => {
   topBarText.style.textShadow = '0 1px 3px rgba(0, 0, 0, 0.8)';
   topBarText.style.color = '#fff';
 
-  let currentState = 'progress'; // Sempre 'progress' para BLACK EXTENDIDA
+  let currentState = 'progress'; // Sempre 'progress' para BLACK ESTENDIDA
 
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const sectionClass = entry.target.className;
 
-        // Para BLACK EXTENDIDA: manter sempre a barra vermelha de progresso
+        // Para BLACK ESTENDIDA: manter sempre a barra vermelha de progresso
         if (sectionClass.includes('hero-section') || sectionClass.includes('features-section') || sectionClass.includes('plans-section')) {
-          // Progress bar state (always red for BLACK EXTENDIDA)
+          // Progress bar state (always red for BLACK ESTENDIDA)
           if (currentState !== 'progress') {
             if (topBarFill) topBarFill.style.display = 'block';
             topBar.style.padding = '0';
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // LP3 date-based lote logic & notifications
-// BLACK EXTENDIDA: Lote 1 estendido até 23:59 de 05/12 ou 100 vagas
+// BLACK ESTENDIDA: Lote 1 estendido até 23:59 de 05/12 ou 100 vagas
 const LP3_LOTES = [
   {
     id: 1,
@@ -465,7 +465,7 @@ function initLp3Lotes() {
     }
 
     if (progressText) {
-      progressText.textContent = isBlackExtendida ? '🔥 BLACK EXTENDIDA' : `LOTE ${activeLote.id} finalizando...`;
+      progressText.textContent = isBlackExtendida ? '🔥 BLACK ESTENDIDA' : `LOTE ${activeLote.id} finalizando...`;
     }
 
     remainingCountElements.forEach(el => {
@@ -482,7 +482,7 @@ function initLp3Lotes() {
 
     if (subtitle) {
       if (activeLote.id === 1) {
-        subtitle.innerHTML = '<b>🔥 BLACK EXTENDIDA! Lote 1 válido até 23:59 de hoje ou +25 vagas.</b>';
+        subtitle.innerHTML = '<b>🔥 BLACK ESTENDIDA! Lote 1 válido até 23:59 de hoje ou +25 vagas.</b>';
       } else {
         const nextInfo = nextLote
           ? `Assim que esse lote virar, o valor vai para <b>12x ${nextLote.price}</b>.`
@@ -506,7 +506,7 @@ function initLp3Lotes() {
     }
 
     if (topBarText) {
-      topBarText.textContent = `🔥 BLACK EXTENDIDA - 12x R$${activeLote.price}`;
+      topBarText.textContent = `🔥 BLACK ESTENDIDA - 12x R$${activeLote.price}`;
     }
 
     if (topBarFill) {
@@ -620,7 +620,7 @@ function updateLoteTabs(activeId, activeProgress = 90) {
 }
 
 function getThermometerColors(percentage, forceRed = false) {
-  // Para BLACK EXTENDIDA, sempre usar vermelho
+  // Para BLACK ESTENDIDA, sempre usar vermelho
   if (forceRed) {
     return { start: 'rgb(220, 38, 38)', end: 'rgb(239, 68, 68)' };
   }
